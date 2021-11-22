@@ -1,0 +1,48 @@
+---
+- hosts: printServer
+  become: true
+
+  pre_tasks:
+    - name: Ensure apt cache is up to date
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when:
+        - ansible_facts.os_family == "Debian"
+
+    - name: Ensure dependencies are installed (Debian)
+      ansible.builtin.apt:
+        name:
+          - cups
+          - samba
+          - hplip
+        state: present
+      when: ansible_facts.os_family == "Debian"
+
+    - name: Ensure {{ ansible_user }} user is added to the lpadmin group.
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: lpadmin
+        append: true
+
+    - name: Ensure CUPS can accept connections from anywhere
+      shell: cupsctl --remote-any
+
+    - name: Restart CUPS
+      ansible.builtin.systemd:
+        name: cups
+        state: restarted
+    
+    - name: Add CUPS to samba config
+      ansible.builtin.blockinfile:
+        block: "{{ lookup('file', './files/sambaConfig.conf') }}"
+        path: /etc/samba/smb.conf
+        backup: yes
+        state: present
+        insertafter: EOF
+        create: yes
+
+    - name: Restart SAMBA 
+      ansible.builtin.systemd:
+        name: smbd
+        state: restarted
