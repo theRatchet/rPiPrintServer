@@ -1,0 +1,11 @@
+---
+- name: Ensure {{ ansible_user }} user is added to the lpadmin group.
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: lpadmin
+    append: true
+
+- name: Ensure CUPS can accept connections from anywhere
+  shell: cupsctl --remote-any
+  notify:
+  - Restart CUPS

@@ -1,0 +1,11 @@
+---
+- name: Add CUPS to samba config
+  ansible.builtin.blockinfile:
+    block: "{{ lookup('file', './files/sambaConfig.conf') }}"
+    path: /etc/samba/smb.conf
+    backup: yes
+    state: present
+    insertafter: EOF
+    create: yes
+  notify: 
+  - Restart SAMBA

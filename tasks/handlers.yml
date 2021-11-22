@@ -1,0 +1,11 @@
+---
+- name: Restart CUPS
+  ansible.builtin.systemd:
+    name: cups
+    state: restarted
+
+- name: Restart SAMBA 
+  ansible.builtin.systemd:
+    name: smbd
+    state: restarted
+
